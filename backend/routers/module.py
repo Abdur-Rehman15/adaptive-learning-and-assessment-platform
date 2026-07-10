@@ -31,26 +31,33 @@ def get_course_modules(
     "/courses/{course_id}/modules",
     response_model=ModuleResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(verify_role(["admin"]))],
 )
 def create_module(
     session: SessionDep,
     course_id: int,
     module_in: ModuleCreate,
+    current_user: User = Depends(verify_role(["admin"])),
 ):
-    return module_service.create_module(session, course_id, module_in)
+    return module_service.create_module(
+        session, course_id, module_in, current_user.username
+    )
 
 
 @router.patch(
     "/courses/{course_id}/modules/{module_id}",
     response_model=ModuleResponse,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(verify_role(["admin"]))],
 )
 def update_module(
-    session: SessionDep, course_id: int, module_id: int, updated_module: ModuleUpdate
+    session: SessionDep,
+    course_id: int,
+    module_id: int,
+    updated_module: ModuleUpdate,
+    current_user: User = Depends(verify_role(["admin"])),
 ):
-    return module_service.update_module(session, course_id, module_id, updated_module)
+    return module_service.update_module(
+        session, course_id, module_id, updated_module, current_user.username
+    )
 
 
 @router.patch(
@@ -67,5 +74,10 @@ def update_modules_order(
 @router.delete(
     "/courses/{course_id}/modules/{module_id}", status_code=status.HTTP_204_NO_CONTENT
 )
-def delete_module(session: SessionDep, course_id: int, module_id: int):
-    module_service.delete_module(session, course_id, module_id)
+def delete_module(
+    session: SessionDep,
+    course_id: int,
+    module_id: int,
+    current_user: User = Depends(verify_role(["admin"])),
+):
+    module_service.delete_module(session, course_id, module_id, current_user.username)
