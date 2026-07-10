@@ -49,7 +49,7 @@ def update_course(
     )
 
 
-@router.delete("/courses/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/courses/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_course(
     session: SessionDep,
     course_id: int,
