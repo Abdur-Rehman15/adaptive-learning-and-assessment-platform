@@ -28,21 +28,19 @@ def create_user(session: Session, user_in: UserCreate):
 
 def update_user(session: Session, user_id: int, updated_user: UserUpdate):
     user = get_user_by_id(session, user_id)
-    if user:
-        db_user = updated_user.model_dump(exclude_unset=True)
-        if "password" in db_user:
-            db_user["hashed_password"] = db_user.pop("password")
-        for k, v in db_user.items():
-            setattr(user, k, v)
-        session.add(user)
-        session.commit()
-        session.refresh(user)
+    db_user = updated_user.model_dump(exclude_unset=True)
+    if "password" in db_user:
+        db_user["hashed_password"] = db_user.pop("password")
+    for k, v in db_user.items():
+        setattr(user, k, v)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
 
     return user
 
 
 def delete_user(session: Session, user_id: int):
     db_user = get_user_by_id(session, user_id)
-    if db_user:
-        session.delete(db_user)
-        session.commit()
+    session.delete(db_user)
+    session.commit()
