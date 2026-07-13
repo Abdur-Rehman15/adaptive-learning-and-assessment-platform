@@ -2,7 +2,16 @@ from fastapi import FastAPI
 from sqlmodel import SQLModel
 from database.database import engine
 from fastapi.middleware.cors import CORSMiddleware
-from routers import user, auth, course, module, question, enrollment, quizAttempt
+from routers import (
+    user,
+    auth,
+    course,
+    module,
+    question,
+    enrollment,
+    quizAttempt,
+    quizAnswer,
+)
 
 app = FastAPI()
 
@@ -28,3 +37,4 @@ app.include_router(module.router)
 app.include_router(question.router)
 app.include_router(enrollment.router)
 app.include_router(quizAttempt.router)
+app.include_router(quizAnswer.router)

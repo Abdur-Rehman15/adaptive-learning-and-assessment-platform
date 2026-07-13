@@ -3,6 +3,10 @@ from models.quizAttempt_model import QuizAttempt
 from datetime import datetime
 
 
+def get_quiz_attempt_by_id(session: Session, attempt_id: int):
+    return session.exec(select(QuizAttempt).where(QuizAttempt.id == attempt_id)).first()
+
+
 def get_quiz_attempt_by_module(session: Session, module_id: int):
     return session.exec(
         select(QuizAttempt).where(QuizAttempt.module_id == module_id)
@@ -27,7 +31,7 @@ def start_or_resume_quiz(session: Session, module_id: int, user_id: int):
     return new_attempt
 
 
-def submit_quiz_attempt(session: Session, module_id: int, final_score:float):
+def submit_quiz_attempt(session: Session, module_id: int, final_score: float):
     db_quiz = get_quiz_attempt_by_module(session, module_id)
     db_quiz.completed_at = datetime.now()
     db_quiz.final_score = final_score
