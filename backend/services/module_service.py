@@ -12,19 +12,33 @@ def get_course_modules(session: Session, course_id: int):
     return module_repo.get_course_modules(session, course_id)
 
 
-def create_module(session: Session, course_id: int, module_in: ModuleCreate):
-    course = course_repo.get_course_by_id(session, course_id)
-    if not course:
-        raise HTTPException(404, "course doesn't exist")
-    return module_repo.create_module(session, course_id, module_in)
-
-
-def update_module(
-    session: Session, course_id: int, module_id: int, updated_module: ModuleUpdate
+def create_module(
+    session: Session, course_id: int, module_in: ModuleCreate, creator_username: str
 ):
     course = course_repo.get_course_by_id(session, course_id)
     if not course:
         raise HTTPException(404, "course doesn't exist")
+    if course.created_by != creator_username:
+        raise HTTPException(
+            403, "you are not allowed to create a module in this course"
+        )
+    return module_repo.create_module(session, course_id, module_in)
+
+
+def update_module(
+    session: Session,
+    course_id: int,
+    module_id: int,
+    updated_module: ModuleUpdate,
+    creator_username: str,
+):
+    course = course_repo.get_course_by_id(session, course_id)
+    if not course:
+        raise HTTPException(404, "course doesn't exist")
+    if course.created_by != creator_username:
+        raise HTTPException(
+            403, "you are not allowed to update a module in this course"
+        )
     module = module_repo.get_module_by_id(session, module_id)
     if not module:
         raise HTTPException(404, "module doesn't exist")
@@ -47,10 +61,16 @@ def update_modules_order(
     return module_repo.update_modules_order(session, course_id, updated_order)
 
 
-def delete_module(session: Session, course_id: int, module_id: int):
+def delete_module(
+    session: Session, course_id: int, module_id: int, creator_username: str
+):
     course = course_repo.get_course_by_id(session, course_id)
     if not course:
         raise HTTPException(404, "course doesn't exist")
+    if course.created_by != creator_username:
+        raise HTTPException(
+            403, "you are not allowed to delete a module in this course"
+        )
     module = module_repo.get_module_by_id(session, module_id)
     if not module:
         raise HTTPException(404, "module doesn't exist")

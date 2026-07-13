@@ -11,7 +11,11 @@ def get_course_modules(session: Session, course_id: int):
     return session.exec(select(Module).where(Module.course_id == course_id)).all()
 
 
-def create_module(session: Session, course_id: int, module_in: ModuleCreate):
+def create_module(
+    session: Session,
+    course_id: int,
+    module_in: ModuleCreate,
+):
     course_module = Module.model_validate(module_in)
     course_module.course_id = course_id
     session.add(course_module)
