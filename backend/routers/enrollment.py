@@ -38,20 +38,6 @@ def create_enrollment(
     )
 
 
-@router.patch(
-    "/update/{enrollment_id}",
-    response_model=EnrollmentResponse,
-    status_code=status.HTTP_200_OK,
-    dependencies=[Depends(verify_role(["user"]))],
-)
-def update_enrollment(
-    session: SessionDep, enrollment_id: int, updated_enrollment: EnrollmentUpdate
-):
-    return enrollment_service.update_enrollment(
-        session, enrollment_id, updated_enrollment
-    )
-
-
 @router.delete("/unenroll/{enrollment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def unenroll_course(session: SessionDep, enrollment_id: int):
     return enrollment_service.unenroll_course(session, enrollment_id)

@@ -6,3 +6,5 @@ class QuizAnswer(QuizAnswerBase, table=True):
   id: int | None=Field(default=None, primary_key=True)
   attempt_id: int | None=Field(default=None, foreign_key="quizattempt.id")
   question_id: int | None=Field(default=None, foreign_key="question.id")
+  is_correct: bool = Field()
+  difficulty_at_time: str = Field()

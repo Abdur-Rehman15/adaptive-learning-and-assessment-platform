@@ -1,5 +1,9 @@
 from fastapi import status, APIRouter, Depends
-from schemas.quizAnswer_schema import QuizAnswerCreate, QuizAnswerResponse
+from schemas.quizAnswer_schema import (
+    QuizAnswerCreate,
+    QuizAnswerResponse,
+    QuizAnswerSubmissionResponse,
+)
 from database.database import SessionDep
 import services.quizAnswer_service as quizAnswer_service
 from middleware.verifyRole import verify_role
@@ -19,7 +23,7 @@ def get_quiz_answers_by_attempt(session: SessionDep, attempt_id: int):
 
 @router.post(
     "/quiz-attempts/{question_id}/answers/{attempt_id}",
-    response_model=QuizAnswerResponse,
+    response_model=QuizAnswerSubmissionResponse,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(verify_role(["user"]))],
 )

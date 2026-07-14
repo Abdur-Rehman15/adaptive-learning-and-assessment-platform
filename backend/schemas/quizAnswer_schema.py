@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel
 from pydantic import model_validator
+from schemas.question_schema import QuestionResponse
 
 
 class QuizAnswerBase(SQLModel):
@@ -8,8 +9,9 @@ class QuizAnswerBase(SQLModel):
 
     @model_validator(mode="after")
     def validate_difficulty(self):
-        if self.difficulty_at_time not in ("easy", "medium", "difficult"):
-            raise ValueError("difficulty can be easy, medium, or difficult only")
+        if self.difficulty_at_time not in ("easy", "medium", "hard"):
+            raise ValueError("difficulty can be easy, medium, or hard only")
+        return self
 
 
 class QuizAnswerResponse(QuizAnswerBase):
@@ -20,3 +22,8 @@ class QuizAnswerResponse(QuizAnswerBase):
 
 class QuizAnswerCreate(SQLModel):
     chosen_option: str
+
+
+class QuizAnswerSubmissionResponse(SQLModel):
+    answer: QuizAnswerResponse
+    next_question: QuestionResponse | None = None

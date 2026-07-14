@@ -9,9 +9,11 @@ def get_quiz_answers_by_attempt(session: Session, attempt_id: int):
     ).all()
 
 
-def get_quiz_answer_by_question(session: Session, question_id: int):
+def get_quiz_answer_by_question(session: Session, question_id: int, attempt_id: int):
     return session.exec(
-        select(QuizAnswer).where(QuizAnswer.question_id == question_id)
+        select(QuizAnswer).where(
+            QuizAnswer.question_id == question_id, QuizAnswer.attempt_id == attempt_id
+        )
     ).first()
 
 
