@@ -1,10 +1,13 @@
 from sqlmodel import SQLModel
 from datetime import datetime
+from pydantic import Field
 
 
 class CertificateBase(SQLModel):
     issued_at: datetime
-    verification_code: int
+    verification_code: int = Field(
+        ge=1000, le=9999, description="verification code should be 4 digits length"
+    )
 
 
 class CertificateCreate(CertificateBase):
