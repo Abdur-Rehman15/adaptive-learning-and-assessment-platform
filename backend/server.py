@@ -11,7 +11,8 @@ from routers import (
     enrollment,
     quizAttempt,
     quizAnswer,
-    analytics
+    analytics,
+    certificate,
 )
 
 app = FastAPI()
@@ -40,3 +41,4 @@ app.include_router(enrollment.router)
 app.include_router(quizAttempt.router)
 app.include_router(quizAnswer.router)
 app.include_router(analytics.router)
+app.include_router(certificate.router)
