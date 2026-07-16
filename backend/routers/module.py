@@ -18,7 +18,7 @@ router = APIRouter()
     "/courses/{course_id}/modules",
     response_model=list[ModuleResponse],
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(verify_role(["admin"]))],
+    dependencies=[Depends(verify_role(["admin", "user"]))],
 )
 def get_course_modules(
     session: SessionDep,
@@ -63,6 +63,7 @@ def update_module(
 @router.patch(
     "/courses/{course_id}/modules",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(verify_role(["admin"]))],
 )
 def update_modules_order(
     session: SessionDep, course_id: int, updated_list: list[ModuleUpdateOrder]

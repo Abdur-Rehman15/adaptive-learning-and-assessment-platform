@@ -32,7 +32,7 @@ def get_learner_summary(
 def get_score_trends(
     course_id: int,
     session: SessionDep,
-    curr_user=Depends(verify_role(["user", "learner"])),
+    curr_user=Depends(verify_role(["user"])),
 ):
     return analytics_service.get_learner_score_trends(session, curr_user.id, course_id)
 

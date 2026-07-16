@@ -18,7 +18,10 @@ def get_creator_courses(
 
 
 @router.get(
-    "/courses", response_model=list[CourseResponse], status_code=status.HTTP_200_OK
+    "/courses",
+    response_model=list[CourseResponse],
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(verify_role(["admin", "user"]))],
 )
 def get_all_courses(session: SessionDep):
     return course_service.get_all_courses(session)
@@ -36,7 +39,9 @@ def create_course(
 
 
 @router.patch(
-    "/courses/{course_id}", response_model=CourseResponse, status_code=status.HTTP_200_OK
+    "/courses/{course_id}",
+    response_model=CourseResponse,
+    status_code=status.HTTP_200_OK,
 )
 def update_course(
     session: SessionDep,

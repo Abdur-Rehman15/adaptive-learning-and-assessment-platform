@@ -1,7 +1,6 @@
 from fastapi import status, APIRouter, Depends
 from schemas.enrollment_schema import (
     EnrollmentCreate,
-    EnrollmentUpdate,
     EnrollmentResponse,
 )
 from database.database import SessionDep
@@ -38,6 +37,10 @@ def create_enrollment(
     )
 
 
-@router.delete("/unenroll/{enrollment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/unenroll/{enrollment_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(verify_role(["admin"]))],
+)
 def unenroll_course(session: SessionDep, enrollment_id: int):
     return enrollment_service.unenroll_course(session, enrollment_id)
