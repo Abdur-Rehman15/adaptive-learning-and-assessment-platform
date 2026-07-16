@@ -15,6 +15,6 @@ class ScoreTrendPoint(BaseModel):
 
 
 class InstructorDashboardResponse(BaseModel):
-    enrolled_learners: int
+    total_enrolled_learners: int
     course_average_progress: float
     completion_rate_percent: float

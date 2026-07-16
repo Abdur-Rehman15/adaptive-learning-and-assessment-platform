@@ -1,11 +1,8 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select, func
-from models import Enrollment, QuizAttempt, QuizAnswer, Question, Module
-from schemas.analytics_schema import (
-    LearnerOverviewResponse,
-    ScoreTrendPoint,
-    InstructorDashboardResponse,
-)
+from models.quizAttempt_model import QuizAttempt
+from models.quizAnswer_model import QuizAnswer
+from models.question_model import Question
 
 
 def get_wrong_answers(session: Session, attempt_ids):

@@ -45,6 +45,6 @@ def get_score_trends(
 def get_instructor_dashboard(
     course_id: int,
     session: SessionDep,
-    dependencies=[Depends(verify_role(["admin"]))],
+    curr_user = Depends(verify_role(["admin"]))
 ):
-    return analytics_service.get_instructor_course_analytics(session, course_id)
+    return analytics_service.get_instructor_course_analytics(session, course_id, curr_user.username)

@@ -8,22 +8,42 @@ from models.enrollment_model import Enrollment
 import repositories.module_repo as module_repo
 import repositories.enrollment_repo as enrollment_repo
 import repositories.analytics_repo as analytics_repo
+import repositories.course_repo as course_repo
+import services.enrollment_service as enrollment_service
 
 
 def get_learner_course_overview(session: Session, user_id: int, course_id: int):
-    enrollments = enrollment_repo.get_enrollments_by_student_id(session, user_id)
-    if not enrollments:
-        raise HTTPException(404, "student not enrolled in any course")
+    student_enrollments = enrollment_service.get_student_enrollments(session, user_id)
+
+    enrollment = next(
+        (e for e in student_enrollments if e.course_id == course_id), None
+    )
+    if not enrollment:
+        raise HTTPException(404, "student not enrolled in this course")
+
     modules = module_repo.get_course_modules(session, course_id)
     module_ids = {m.id for m in modules}
 
-    attempts = analytics_repo.get_module_attempts(session, user_id, module_ids)
+    attempts_result = analytics_repo.get_module_attempts(session, user_id, module_ids)
 
-    scores = [a.final_score for a in attempts if a.final_score is not None]
+    if hasattr(attempts_result, "all"):
+        attempts = attempts_result.all()
+    elif isinstance(attempts_result, list):
+        attempts = attempts_result
+    else:
+        attempts = []
+
+    scores = [
+        a.final_score
+        for a in attempts
+        if a and getattr(a, "final_score", None) is not None
+    ]
     avg_score = round(sum(scores) / len(scores), 2) if scores else 0.0
 
-    attempt_ids = [a.id for a in attempts]
-    wrong_answers = analytics_repo.get_wrong_answers(session, attempt_ids)
+    attempt_ids = [a.id for a in attempts if a]
+    wrong_answers = (
+        analytics_repo.get_wrong_answers(session, attempt_ids) if attempt_ids else []
+    )
 
     sorted_weak_topics = [
         topic
@@ -32,7 +52,7 @@ def get_learner_course_overview(session: Session, user_id: int, course_id: int):
 
     return {
         "course_id": course_id,
-        "progress_percent": enrollments.progress_percent,
+        "progress_percent": enrollment.progress_percent,
         "average_quiz_score": avg_score,
         "weakest_topics": sorted_weak_topics[:3],
     }
@@ -60,7 +80,15 @@ def get_learner_score_trends(session: Session, user_id: int, course_id: int):
     ]
 
 
-def get_instructor_course_analytics(session: Session, course_id: int):
+def get_instructor_course_analytics(
+    session: Session, course_id: int, instructor_username: str
+):
+    course = course_repo.get_course_by_id(session, course_id)
+    if not course:
+        raise HTTPException(404, "course not found with this ID")
+    if course.created_by != instructor_username:
+        raise HTTPException(403, "you are not allowed to access this course analytics")
+
     enrollments = enrollment_repo.get_course_enrollments(session, course_id)
 
     total_learners = len(enrollments)
