@@ -1,10 +1,5 @@
 from fastapi import HTTPException
-from sqlmodel import Session, select, func
-from models.quizAttempt_model import QuizAttempt
-from models.question_model import Question
-from models.quizAnswer_model import QuizAnswer
-from models.module_model import Module
-from models.enrollment_model import Enrollment
+from sqlmodel import Session
 import repositories.module_repo as module_repo
 import repositories.enrollment_repo as enrollment_repo
 import repositories.analytics_repo as analytics_repo

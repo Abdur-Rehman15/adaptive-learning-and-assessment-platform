@@ -11,6 +11,7 @@ import repositories.question_repo as question_repo
 import repositories.quizAnswer_repo as quizAnswer_repo
 import services.quizAnswer_service as quizAnswer_service
 import services.enrollment_service as enrollment_service
+from middleware.notification_decorator import notify
 
 
 def __calculate_final_score(attempted_answers: list[QuizAnswer]):
@@ -111,6 +112,7 @@ def get_module_quiz_attempt(session: Session, module_id: int):
     return attempt
 
 
+@notify(type="quiz_start", message="You started a quiz for {module_title}")
 def start_or_resume_quiz(session: Session, module_id: int, user_id: int):
     user = user_repo.get_user_by_id(session, user_id)
     if not user:
@@ -130,10 +132,14 @@ def start_or_resume_quiz(session: Session, module_id: int, user_id: int):
             )
 
         next_question = adaptive_engine_next_question(session, attempt, module_id)
+        if isinstance(next_question, dict) is False and next_question is not None:
+            attempt.module_title = module.title
         return {"attempt": attempt, "next_question": next_question}
 
     new_attempt = quizAttempt_repo.start_or_resume_quiz(session, module_id, user_id)
     next_question = adaptive_engine_next_question(session, new_attempt, module_id)
+    if isinstance(next_question, dict) is False and next_question is not None:
+        new_attempt.module_title = module.title
     return {"attempt": new_attempt, "next_question": next_question}
 
 
@@ -162,6 +168,7 @@ def retry_quiz(session: Session, module_id: int, user_id: int):
     return {"attempt": new_attempt, "next_question": next_question}
 
 
+@notify(type="quiz_submission", message="quiz submitted! Your final score is {final_score}%")
 def submit_quiz(session: Session, module_id: int, user_id: int):
     attempt = quizAttempt_repo.get_latest_user_quiz_attempt_by_module(
         session, module_id, user_id
@@ -196,5 +203,8 @@ def submit_quiz(session: Session, module_id: int, user_id: int):
             enrollment_service.update_enrollment_progress(
                 session, target_enrollment.id, user_id, db_module.course_id
             )
+
+    if result:
+        result.final_score = final_score
 
     return result

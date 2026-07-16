@@ -13,6 +13,7 @@ from routers import (
     quizAnswer,
     analytics,
     certificate,
+    notification
 )
 
 app = FastAPI()
@@ -42,3 +43,4 @@ app.include_router(quizAttempt.router)
 app.include_router(quizAnswer.router)
 app.include_router(analytics.router)
 app.include_router(certificate.router)
+app.include_router(notification.router)
