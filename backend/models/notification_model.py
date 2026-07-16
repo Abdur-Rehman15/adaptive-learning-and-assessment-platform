@@ -5,6 +5,6 @@ from datetime import datetime
 
 class Notification(NotificationBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    user_id: int | None = Field(default=None, foreign_key="user.id")
+    user_id: int | None = Field(default=None, foreign_key="user.id", ondelete="CASCADE")
     is_read: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.now().date())
