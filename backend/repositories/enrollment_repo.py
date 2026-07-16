@@ -13,7 +13,15 @@ def get_enrollments_by_student_id(session: Session, student_id: int):
     ).all()
 
 
-def create_enrollment(session: Session, user_id: int, course_id: int, enrollment_in: EnrollmentCreate):
+def get_course_enrollments(session: Session, course_id: int):
+    return session.exec(
+        select(Enrollment).where(Enrollment.course_id == course_id)
+    ).all()
+
+
+def create_enrollment(
+    session: Session, user_id: int, course_id: int, enrollment_in: EnrollmentCreate
+):
     db_enrollment = Enrollment.model_validate(enrollment_in)
     db_enrollment.user_id = user_id
     db_enrollment.course_id = course_id
