@@ -10,6 +10,7 @@ import repositories.quizAttempt_repo as quizAttempt_repo
 import services.certificate_service as certificate_service
 from datetime import datetime
 import random
+from middleware.notification_decorator import notify
 
 
 def get_student_enrollments(session: Session, user_id: int):
@@ -20,6 +21,7 @@ def get_student_enrollments(session: Session, user_id: int):
     return enrollment_repo.get_enrollments_by_student_id(session, user_id)
 
 
+@notify(type="new-enrollment", message="You got enrolled in {course_title}")
 def create_enrollment(
     session: Session, course_id: int, user_id: int, enrollment_in: EnrollmentCreate
 ):
@@ -34,7 +36,15 @@ def create_enrollment(
     if course.id in existing_course_ids:
         raise HTTPException(400, "student already enrolled in this course")
 
-    return enrollment_repo.create_enrollment(session, user_id, course_id, enrollment_in)
+    new_enrollment = enrollment_repo.create_enrollment(
+        session, user_id, course_id, enrollment_in
+    )
+    new_enrollment.course_title = course.title
+    instructor = user_repo.get_user_by_username(session, course.created_by)
+    if instructor:
+        user_id = instructor.id
+
+    return new_enrollment
 
 
 def __calculate_enrollment_progress(
@@ -65,27 +75,45 @@ def __calculate_enrollment_progress(
     return round((len(completed_module_ids) / len(modules)) * 100, 2)
 
 
+@notify(
+    type="course_completion",
+    message="Congratulations! You have completed the course {course_title}",
+)
 def update_enrollment_progress(
     session: Session, enrollment_id: int, user_id: int, course_id: int
 ):
     enrollment = enrollment_repo.get_enrollment_by_id(session, enrollment_id)
     if not enrollment:
         raise HTTPException(404, "enrollment not found with this ID")
+    course = course_repo.get_course_by_id(session, course_id)
+    if not course:
+        raise HTTPException(404, "course not found")
 
     new_progress = __calculate_enrollment_progress(session, user_id, course_id)
     new_status = enrollment.status
 
-    if new_progress >= 100:
+    is_newly_completed = False
+
+    if new_progress >= 100 and enrollment.status != "Completed":
         new_status = "Completed"
+        is_newly_completed = True
         certificate_in = Certificate(
             issued_at=datetime.now().date(), verification_code=random.randint(0, 9999)
         )
         certificate_service.create_certificate(
             session, user_id, course_id, certificate_in
         )
-        
+
     updated = EnrollmentUpdate(progress_percent=new_progress, status=new_status)
-    return enrollment_repo.update_enrollment(session, enrollment_id, updated)
+    db_result = enrollment_repo.update_enrollment(session, enrollment_id, updated)
+
+    if db_result:
+        db_result.course_title = course.title
+
+    if not is_newly_completed:
+        user_id = None
+
+    return db_result
 
 
 def unenroll_course(session: Session, enrollment_id: int):

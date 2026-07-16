@@ -7,7 +7,6 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from schemas.certificate_schema import CertificateCreate
 import repositories.certificate_repo as certificate_repo
-import repositories.user_repo as user_repo
 import repositories.course_repo as course_repo
 from fastapi.responses import StreamingResponse
 

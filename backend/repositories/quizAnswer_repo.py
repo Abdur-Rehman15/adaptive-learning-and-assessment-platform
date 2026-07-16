@@ -1,6 +1,5 @@
 from sqlmodel import Session, select
 from models.quizAnswer_model import QuizAnswer
-from schemas.quizAnswer_schema import QuizAnswerCreate
 
 
 def get_quiz_answers_by_attempt(session: Session, attempt_id: int):
