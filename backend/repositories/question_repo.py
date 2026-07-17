@@ -11,6 +11,16 @@ def get_module_questions(session: Session, module_id: int):
     return session.exec(select(Question).where(Question.module_id == module_id)).all()
 
 
+def get_module_questions_by_difficulty(
+    session: Session, module_id: int, difficulty: str
+):
+    return session.exec(
+        select(Question).where(
+            Question.module_id == module_id and Question.difficulty == difficulty
+        )
+    ).all()
+
+
 def create_question(
     session: Session,
     module_id: int,

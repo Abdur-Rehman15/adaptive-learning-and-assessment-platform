@@ -1,7 +1,7 @@
 from enum import Enum
 from sqlmodel import SQLModel
 from typing import List
-from pydantic import model_validator
+from pydantic import model_validator, Field
 
 
 class QuestionType(str, Enum):
@@ -17,8 +17,14 @@ class DifficultyLevel(str, Enum):
 
 class QuestionBase(SQLModel):
     question_type: QuestionType = QuestionType.MCQ
-    text: str
-    topic: str
+    text: str = Field(
+        min_length=20,
+        description="question text length should be atleast 15 characters",
+    )
+    topic: str = Field(
+        min_length=3,
+        description="question text length should be atleast 3 characters",
+    )
     difficulty: DifficultyLevel = DifficultyLevel.MEDIUM
     options: List[str]
     correct_option: str

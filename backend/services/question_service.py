@@ -4,6 +4,7 @@ from schemas.question_schema import QuestionCreate, QuestionUpdate
 import repositories.question_repo as question_repo
 import repositories.module_repo as module_repo
 import repositories.course_repo as course_repo
+from middleware.notification_decorator import notify
 
 
 def get_question_by_id(session: Session, question_id: int):
@@ -20,6 +21,10 @@ def get_module_questions(session: Session, module_id: int):
     return question_repo.get_module_questions(session, module_id)
 
 
+@notify(
+    type="question_creation",
+    message="A new question was successfully added to module ID {module_id}.",
+)
 def create_question(
     session: Session, module_id: int, question_in: QuestionCreate, creator_username: str
 ):
@@ -32,9 +37,12 @@ def create_question(
         raise HTTPException(
             403, "you are not allowed to create a question in this module"
         )
-    return question_repo.create_question(session, module_id, question_in)
+    new_question = question_repo.create_question(session, module_id, question_in)
+    new_question.module_id = module.id
+    return new_question
 
 
+@notify(type="question_update", message="Question ID {question_id} has been modified.")
 def update_question(
     session: Session,
     question_id: int,
@@ -50,13 +58,11 @@ def update_question(
     if not course or course.created_by != creator_username:
         raise HTTPException(403, "you are not allowed to update this question")
 
-    updated = updated_question.model_dump(exclude_unset=True)
-    for k, v in updated.items():
-        setattr(question, k, v)
-    session.add(question)
-    session.commit()
-    session.refresh(question)
-    return question
+    updated_question = question_repo.update_question(
+        session, question_id, updated_question
+    )
+    updated_question.question_id = question.id
+    return updated_question
 
 
 def delete_question(session: Session, question_id: int, creator_username: str):
@@ -69,5 +75,4 @@ def delete_question(session: Session, question_id: int, creator_username: str):
     if not course or course.created_by != creator_username:
         raise HTTPException(403, "you are not allowed to delete this question")
 
-    session.delete(question)
-    session.commit()
+    question_repo.delete_question(session, question_id)

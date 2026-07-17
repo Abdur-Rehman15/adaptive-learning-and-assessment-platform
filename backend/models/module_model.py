@@ -1,10 +1,19 @@
 from sqlmodel import Field, Relationship
 from schemas.module_schema import ModuleBase
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.course_model import Course
 
 
 class Module(ModuleBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    course_id: int | None = Field(default=None, foreign_key="course.id")
+    course_id: int | None = Field(
+        default=None, foreign_key="course.id", ondelete="CASCADE"
+    )
     title: str
     order: int
     content_url: str
+
+    course: "Course" = Relationship(back_populates="modules")
+

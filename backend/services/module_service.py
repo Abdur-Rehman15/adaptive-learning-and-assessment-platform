@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from schemas.module_schema import ModuleCreate, ModuleUpdate, ModuleUpdateOrder
 import repositories.module_repo as module_repo
 import repositories.course_repo as course_repo
+from middleware.notification_decorator import notify
 
 
 def get_course_modules(session: Session, course_id: int):
@@ -12,6 +13,9 @@ def get_course_modules(session: Session, course_id: int):
     return module_repo.get_course_modules(session, course_id)
 
 
+@notify(
+    type="module_creation", message="Module successfully added to Course ID {course_id}"
+)
 def create_module(
     session: Session, course_id: int, module_in: ModuleCreate, creator_username: str
 ):
@@ -22,9 +26,13 @@ def create_module(
         raise HTTPException(
             403, "you are not allowed to create a module in this course"
         )
-    return module_repo.create_module(session, course_id, module_in)
+    result = module_repo.create_module(session, course_id, module_in)
+    if result:
+        result.course_id = course_id
+    return result
 
 
+@notify(type="module_update", message="Module ID {module_id} has been modified")
 def update_module(
     session: Session,
     course_id: int,
@@ -43,7 +51,10 @@ def update_module(
     if not module:
         raise HTTPException(404, "module doesn't exist")
 
-    return module_repo.update_module(session, module_id, updated_module)
+    result = module_repo.update_module(session, module_id, updated_module)
+    if result:
+        result.module_id = module.id
+    return result
 
 
 def update_modules_order(
