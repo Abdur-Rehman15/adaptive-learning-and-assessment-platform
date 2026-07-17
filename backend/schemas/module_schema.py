@@ -13,10 +13,11 @@ class ModuleBase(SQLModel):
     )
     content_url: str
 
-    @field_validator(mode="after")
-    def validate_url(self):
-        cleaned_url = self.content_url.strip()
+    field_validator("content_url", mode="after")
+    @classmethod
+    def validate_url(cls, v: str) -> str:
         try:
+            cleaned_url = v.strip()
             HttpUrl(cleaned_url)
         except Exception:
             raise ValueError("content url must be a valid link")

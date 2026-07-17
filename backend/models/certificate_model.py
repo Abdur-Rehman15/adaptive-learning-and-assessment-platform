@@ -1,5 +1,10 @@
-from sqlmodel import Field
+from sqlmodel import Field, Relationship
 from schemas.certificate_schema import CertificateBase
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models.user_model import User
+    from models.course_model import Course
 
 
 class Certificate(CertificateBase, table=True):
@@ -8,3 +13,7 @@ class Certificate(CertificateBase, table=True):
     course_id: int | None = Field(
         default=None, foreign_key="course.id", ondelete="CASCADE"
     )
+    user: "User" = Relationship(back_populates="certificates")
+    course: "Course" = Relationship(back_populates="certificates")
+
+
