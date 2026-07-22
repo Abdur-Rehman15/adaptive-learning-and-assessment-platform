@@ -209,4 +209,10 @@ def submit_quiz(session: Session, module_id: int, user_id: int):
     if result:
         result.final_score = final_score
 
-    return result
+    return {
+        "id": result.id if result else attempt.id,
+        "module_id": module_id,
+        "user_id": user_id,
+        "final_score": final_score,
+        "completed_at": result.completed_at.isoformat() if result and result.completed_at else None,
+    }
