@@ -66,7 +66,6 @@ def update_question(
     updated_question = question_repo.update_question(
         session, question_id, updated_question
     )
-    updated_question.question_id = question.id
     return updated_question
 
 

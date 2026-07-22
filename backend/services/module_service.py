@@ -58,8 +58,6 @@ def update_module(
         raise HTTPException(404, "module doesn't exist")
 
     result = module_repo.update_module(session, module_id, updated_module)
-    if result:
-        result.module_id = module.id
     return result
 
 

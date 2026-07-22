@@ -7,6 +7,7 @@ from models.quizAttempt_model import QuizAttempt
 import repositories.user_repo as user_repo
 import repositories.quizAttempt_repo as quizAttempt_repo
 import repositories.module_repo as module_repo
+import repositories.course_repo as course_repo
 import repositories.question_repo as question_repo
 import repositories.quizAnswer_repo as quizAnswer_repo
 import services.quizAnswer_service as quizAnswer_service
@@ -113,13 +114,16 @@ def get_module_quiz_attempt(session: Session, module_id: int):
 
 
 @notify(type="quiz_start", message="You started a quiz for {module_title}")
-def start_or_resume_quiz(session: Session, module_id: int, user_id: int):
+def start_or_resume_quiz(session: Session, module_id: int, user_id: int, module_title: str = ""):
     user = user_repo.get_user_by_id(session, user_id)
     if not user:
         raise HTTPException(404, "user not found")
     module = module_repo.get_module_by_id(session, module_id)
     if not module:
         raise HTTPException(404, "module not found")
+
+    # Populate module_title so the @notify decorator can use it in the message
+    module_title = module.title
 
     attempt = quizAttempt_repo.get_latest_user_quiz_attempt_by_module(
         session, module_id, user_id
@@ -132,14 +136,10 @@ def start_or_resume_quiz(session: Session, module_id: int, user_id: int):
             )
 
         next_question = adaptive_engine_next_question(session, attempt, module_id)
-        if isinstance(next_question, dict) is False and next_question is not None:
-            attempt.module_title = module.title
         return {"attempt": attempt, "next_question": next_question}
 
     new_attempt = quizAttempt_repo.start_or_resume_quiz(session, module_id, user_id)
     next_question = adaptive_engine_next_question(session, new_attempt, module_id)
-    if isinstance(next_question, dict) is False and next_question is not None:
-        new_attempt.module_title = module.title
     return {"attempt": new_attempt, "next_question": next_question}
 
 
@@ -200,8 +200,10 @@ def submit_quiz(session: Session, module_id: int, user_id: int):
             None,
         )
         if target_enrollment:
+            db_course = course_repo.get_course_by_id(session, db_module.course_id)
+            course_title = db_course.title if db_course else ""
             enrollment_service.update_enrollment_progress(
-                session, target_enrollment.id, user_id, db_module.course_id
+                session, target_enrollment.id, user_id, db_module.course_id, course_title
             )
 
     if result:

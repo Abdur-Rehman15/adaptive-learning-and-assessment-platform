@@ -76,7 +76,7 @@ def __calculate_enrollment_progress(
     message="Congratulations! You have completed the course {course_title}",
 )
 def update_enrollment_progress(
-    session: Session, enrollment_id: int, user_id: int, course_id: int
+    session: Session, enrollment_id: int, user_id: int, course_id: int, course_title: str = ""
 ):
     enrollment = enrollment_repo.get_enrollment_by_id(session, enrollment_id)
     if not enrollment:
@@ -84,6 +84,9 @@ def update_enrollment_progress(
     course = course_repo.get_course_by_id(session, course_id)
     if not course:
         raise HTTPException(404, "course not found")
+
+    # Make course_title available for the @notify decorator
+    course_title = course.title
 
     new_progress = __calculate_enrollment_progress(session, user_id, course_id)
     new_status = enrollment.status
@@ -102,9 +105,6 @@ def update_enrollment_progress(
 
     updated = EnrollmentUpdate(progress_percent=new_progress, status=new_status)
     db_result = enrollment_repo.update_enrollment(session, enrollment_id, updated)
-
-    if db_result:
-        db_result.course_title = course.title
 
     if not is_newly_completed:
         user_id = None
