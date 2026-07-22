@@ -5,9 +5,12 @@ from models.certificate_model import Certificate
 def add_certificate(
     session: Session, user_id: int, course_id: int, certificate_in: Certificate
 ):
-    db_certificate = Certificate.model_validate(certificate_in)
-    db_certificate.user_id = user_id
-    db_certificate.course_id = course_id
+    db_certificate = Certificate(
+        issued_at=certificate_in.issued_at,
+        verification_code=certificate_in.verification_code,
+        user_id=user_id,
+        course_id=course_id,
+    )
     session.add(db_certificate)
     session.commit()
     session.refresh(db_certificate)

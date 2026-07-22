@@ -97,7 +97,7 @@ def update_enrollment_progress(
         new_status = "Completed"
         is_newly_completed = True
         certificate_in = Certificate(
-            issued_at=datetime.now().date(), verification_code=random.randint(0, 9999)
+            issued_at=datetime.now(), verification_code=random.randint(1000, 9999)
         )
         certificate_service.create_certificate(
             session, user_id, course_id, certificate_in
@@ -105,9 +105,6 @@ def update_enrollment_progress(
 
     updated = EnrollmentUpdate(progress_percent=new_progress, status=new_status)
     db_result = enrollment_repo.update_enrollment(session, enrollment_id, updated)
-
-    if not is_newly_completed:
-        user_id = None
 
     return db_result
 

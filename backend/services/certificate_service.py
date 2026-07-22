@@ -123,13 +123,15 @@ def download_certificate(
     )
     if not certificate_data:
         raise HTTPException(400, "certificate not issued yet. complete course first")
-    certificate_user_id = {c.user_id for c in certificate_data}
-    if certificate_user_id != user_id:
+
+    certificate = certificate_data[0]
+
+    if certificate.user_id != user_id:
         raise HTTPException(
             403, "you are not allowed to download someone else's certificate"
         )
 
-    verification_code = {c.verification_code for c in certificate_data}
+    verification_code = str(certificate.verification_code)
 
     pdf_file = __draw_certificate_pdf(student_username, course.title, verification_code)
 
