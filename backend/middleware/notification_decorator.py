@@ -1,3 +1,4 @@
+import inspect
 import services.notification_service as notification_service
 from schemas.notification_schema import NotificationCreate
 from functools import wraps
@@ -23,15 +24,35 @@ def notify(type: str, message: str, user_id_pos: int = 2, session_pos: int = 0):
                     user_id = user.id if user else None
 
                 if isinstance(user_id, int):
-                    context = {**kwargs}
-                    if result and hasattr(result, "__dict__"):
-                        context.update(
-                            {
-                                k: v
-                                for k, v in result.__dict__.items()
-                                if not k.startswith("_")
-                            }
-                        )
+                    try:
+                        sig = inspect.signature(original_func)
+                        bound_args = sig.bind(*args, **kwargs)
+                        bound_args.apply_defaults()
+                        context = {**bound_args.arguments}
+                    except Exception:
+                        context = {**kwargs}
+
+                    if result:
+                        if isinstance(result, dict):
+                            context.update(result)
+                            for k, v in result.items():
+                                if hasattr(v, "__dict__"):
+                                    context.update(
+                                        {
+                                            key: val
+                                            for key, val in v.__dict__.items()
+                                            if not key.startswith("_")
+                                        }
+                                    )
+                        elif hasattr(result, "__dict__"):
+                            context.update(
+                                {
+                                    k: v
+                                    for k, v in result.__dict__.items()
+                                    if not k.startswith("_")
+                                }
+                            )
+
                     try:
                         formatted_message = message.format(*args, **context)
                     except Exception:

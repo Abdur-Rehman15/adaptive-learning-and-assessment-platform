@@ -14,7 +14,7 @@ class NotificationBase(SQLModel):
         description="notification msg length should be atleast 20 characters",
     )
     is_read: bool = False
-    created_at: datetime
+    created_at: datetime = Field(default_factory=datetime.now)
 
 
 class NotificationCreate(SQLModel):

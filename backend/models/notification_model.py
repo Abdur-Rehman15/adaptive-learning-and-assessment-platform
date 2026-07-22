@@ -1,7 +1,6 @@
 from sqlmodel import Field, Relationship
 from schemas.notification_schema import NotificationBase
 from datetime import datetime
-import models.notification_model as notification_model
 
 
 class Notification(NotificationBase, table=True):
