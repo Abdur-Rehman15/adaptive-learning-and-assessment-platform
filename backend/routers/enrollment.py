@@ -5,6 +5,7 @@ from schemas.enrollment_schema import (
 )
 from database.database import SessionDep
 import services.enrollment_service as enrollment_service
+import repositories.course_repo as course_repo
 from middleware.verifyRole import verify_role
 
 router = APIRouter()
@@ -32,8 +33,10 @@ def create_enrollment(
     enrollment_in: EnrollmentCreate,
     curr_user=Depends(verify_role(["user"])),
 ):
+    course = course_repo.get_course_by_id(session, course_id)
+    course_title = course.title if course else ""
     return enrollment_service.create_enrollment(
-        session, course_id, curr_user.id, enrollment_in
+        session, course_id, curr_user.id, enrollment_in, course_title=course_title
     )
 
 

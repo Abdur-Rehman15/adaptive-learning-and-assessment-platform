@@ -23,7 +23,7 @@ def get_student_enrollments(session: Session, user_id: int):
 
 @notify(type="new-enrollment", message="You got enrolled in {course_title}")
 def create_enrollment(
-    session: Session, course_id: int, user_id: int, enrollment_in: EnrollmentCreate
+    session: Session, course_id: int, user_id: int, enrollment_in: EnrollmentCreate, course_title: str = ""
 ):
     user = user_repo.get_user_by_id(session, user_id)
     if not user:
@@ -39,10 +39,6 @@ def create_enrollment(
     new_enrollment = enrollment_repo.create_enrollment(
         session, user_id, course_id, enrollment_in
     )
-    new_enrollment.course_title = course.title
-    instructor = user_repo.get_user_by_username(session, course.created_by)
-    if instructor:
-        user_id = instructor.id
 
     return new_enrollment
 
