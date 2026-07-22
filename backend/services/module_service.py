@@ -14,7 +14,9 @@ def get_course_modules(session: Session, course_id: int):
 
 
 @notify(
-    type="module_creation", message="Module successfully added to Course ID {course_id}"
+    type="module_creation",
+    message="Module successfully added to Course ID {course_id}",
+    user_id_pos=3,
 )
 def create_module(
     session: Session, course_id: int, module_in: ModuleCreate, creator_username: str
@@ -32,7 +34,11 @@ def create_module(
     return result
 
 
-@notify(type="module_update", message="Module ID {module_id} has been modified")
+@notify(
+    type="module_update",
+    message="Module ID {module_id} has been modified",
+    user_id_pos=4,
+)
 def update_module(
     session: Session,
     course_id: int,

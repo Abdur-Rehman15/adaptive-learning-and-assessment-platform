@@ -24,6 +24,7 @@ def get_module_questions(session: Session, module_id: int):
 @notify(
     type="question_creation",
     message="A new question was successfully added to module ID {module_id}.",
+    user_id_pos=3,
 )
 def create_question(
     session: Session, module_id: int, question_in: QuestionCreate, creator_username: str
@@ -42,7 +43,11 @@ def create_question(
     return new_question
 
 
-@notify(type="question_update", message="Question ID {question_id} has been modified.")
+@notify(
+    type="question_update",
+    message="Question ID {question_id} has been modified.",
+    user_id_pos=3,
+)
 def update_question(
     session: Session,
     question_id: int,

@@ -1,6 +1,8 @@
 import services.notification_service as notification_service
 from schemas.notification_schema import NotificationCreate
 from functools import wraps
+from models.user_model import User
+from sqlmodel import select
 
 
 def notify(type: str, message: str, user_id_pos: int = 2, session_pos: int = 0):
@@ -16,29 +18,35 @@ def notify(type: str, message: str, user_id_pos: int = 2, session_pos: int = 0):
             )
 
             if session and user_id:
-                context = {**kwargs}
-                if result and hasattr(result, "__dict__"):
-                    context.update(
-                        {
-                            k: v
-                            for k, v in result.__dict__.items()
-                            if not k.startswith("_")
-                        }
-                    )
-                try:
-                    formatted_message = message.format(*args, **context)
-                except Exception:
-                    formatted_message = message
+                if isinstance(user_id, str):
+                    user = session.exec(select(User).where(User.username == user_id)).first()
+                    user_id = user.id if user else None
 
-                notification_in = NotificationCreate(
-                    type=type, message=formatted_message
-                )
-                notification_service.create_in_app_notification(
-                    session, user_id, notification_in
-                )
+                if isinstance(user_id, int):
+                    context = {**kwargs}
+                    if result and hasattr(result, "__dict__"):
+                        context.update(
+                            {
+                                k: v
+                                for k, v in result.__dict__.items()
+                                if not k.startswith("_")
+                            }
+                        )
+                    try:
+                        formatted_message = message.format(*args, **context)
+                    except Exception:
+                        formatted_message = message
+
+                    notification_in = NotificationCreate(
+                        type=type, message=formatted_message
+                    )
+                    notification_service.create_in_app_notification(
+                        session, user_id, notification_in
+                    )
 
             return result
 
         return wrapper
 
     return original
+
