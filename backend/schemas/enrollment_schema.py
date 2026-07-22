@@ -11,7 +11,9 @@ class EnrollmentCreate(SQLModel):
 
 
 class EnrollmentResponse(EnrollmentBase):
+    id: int
     user_id: int
+    course_id: int
 
 
 class EnrollmentUpdate(SQLModel):
