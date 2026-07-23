@@ -11,7 +11,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:5173",
-    "https://skillforge-henna.vercel.app/"
+    "https://skillforge-henna.vercel.app",
 ]
 
 @app.on_event("startup")
