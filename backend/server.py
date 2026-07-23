@@ -3,31 +3,25 @@ from sqlmodel import SQLModel
 from database.database import engine
 from fastapi.middleware.cors import CORSMiddleware
 from routers import (
-    user,
-    auth,
-    course,
-    module,
-    question,
-    enrollment,
-    quizAttempt,
-    quizAnswer,
-    analytics,
-    certificate,
-    notification
+    user, auth, course, module, question, enrollment, 
+    quizAttempt, quizAnswer, analytics, certificate, notification
 )
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:5173",
+    "https://skillforge-henna.vercel.app/"
+]
 
 @app.on_event("startup")
 def on_startup():
     # SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
 
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
