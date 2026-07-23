@@ -27,6 +27,7 @@ class NotificationUpdate(SQLModel):
 
 
 class NotificationResponse(SQLModel):
+    id: int
     type: str
     message: str
     is_read: bool
