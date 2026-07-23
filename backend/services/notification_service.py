@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from schemas.notification_schema import NotificationCreate
+from schemas.notification_schema import NotificationCreate, NotificationUpdate
 import repositories.notification_repo as notification_repo
 
 
@@ -24,4 +24,6 @@ def read_notification(session: Session, user_id: int, notification_id: int):
         raise HTTPException(
             403, "you are not allowed to modify notifications other than yours"
         )
-    return notification_repo.read_notification(session, notification_id)
+    return notification_repo.read_notification(
+        session, notification_id, NotificationUpdate(is_read=True)
+    )
