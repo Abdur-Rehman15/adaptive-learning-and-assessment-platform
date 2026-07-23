@@ -28,8 +28,12 @@ def get_quiz_answers_by_attempt(session: SessionDep, attempt_id: int):
     dependencies=[Depends(verify_role(["user"]))],
 )
 def create_quiz_answer(
-    session: SessionDep, question_id: int, attempt_id: int, answer_in: QuizAnswerCreate
+    session: SessionDep,
+    question_id: int,
+    attempt_id: int,
+    answer_in: QuizAnswerCreate,
+    curr_user=Depends(verify_role(["user"])),
 ):
     return quizAnswer_service.create_quiz_answer(
-        session, question_id, attempt_id, answer_in
+        session, question_id, attempt_id, answer_in, curr_user.id
     )

@@ -13,8 +13,10 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(verify_role(["user"]))],
 )
-def get_module_quiz_attempt(session: SessionDep, module_id: int):
-    return quizAttempt_service.get_module_quiz_attempt(session, module_id)
+def get_module_quiz_attempt(
+    session: SessionDep, module_id: int, curr_user=Depends(verify_role(["user"]))
+):
+    return quizAttempt_service.get_module_quiz_attempt(session, module_id, curr_user.id)
 
 
 @router.post(

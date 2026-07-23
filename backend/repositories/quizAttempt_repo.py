@@ -28,9 +28,11 @@ def get_all_quiz_attempts_by_user(session: Session, user_id: int):
 
 
 def start_or_resume_quiz(session: Session, module_id: int, user_id: int):
-    db_quiz_attempt = get_quiz_attempt_by_module(session, module_id)
-    if db_quiz_attempt:
-        return db_quiz_attempt
+    existing_attempt = get_latest_user_quiz_attempt_by_module(
+        session, module_id, user_id
+    )
+    if existing_attempt and existing_attempt.completed_at is None:
+        return existing_attempt
 
     new_attempt = QuizAttempt(
         started_at=datetime.now(),

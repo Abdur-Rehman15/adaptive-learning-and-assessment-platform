@@ -106,8 +106,10 @@ def adaptive_engine_next_question(
     return selected_question
 
 
-def get_module_quiz_attempt(session: Session, module_id: int):
-    attempt = quizAttempt_repo.get_quiz_attempt_by_module(session, module_id)
+def get_module_quiz_attempt(session: Session, module_id: int, user_id: int):
+    attempt = quizAttempt_repo.get_latest_user_quiz_attempt_by_module(
+        session, module_id, user_id
+    )
     if not attempt:
         raise HTTPException(404, "no quiz attempt found")
     return attempt
@@ -136,10 +138,21 @@ def start_or_resume_quiz(session: Session, module_id: int, user_id: int, module_
             )
 
         next_question = adaptive_engine_next_question(session, attempt, module_id)
+        if next_question is None:
+            raise HTTPException(
+                400, "no unanswered questions remain in this quiz attempt"
+            )
+
         return {"attempt": attempt, "next_question": next_question}
 
     new_attempt = quizAttempt_repo.start_or_resume_quiz(session, module_id, user_id)
+    if new_attempt.user_id != user_id:
+        raise HTTPException(403, "quiz attempt ownership mismatch")
+
     next_question = adaptive_engine_next_question(session, new_attempt, module_id)
+    if next_question is None:
+        raise HTTPException(400, "no questions available for this module")
+
     return {"attempt": new_attempt, "next_question": next_question}
 
 
@@ -165,6 +178,9 @@ def retry_quiz(session: Session, module_id: int, user_id: int):
 
     new_attempt = quizAttempt_repo.create_new_quiz_attempt(session, module_id, user_id)
     next_question = adaptive_engine_next_question(session, new_attempt, module_id)
+    if next_question is None:
+        raise HTTPException(400, "no questions available for this module")
+
     return {"attempt": new_attempt, "next_question": next_question}
 
 

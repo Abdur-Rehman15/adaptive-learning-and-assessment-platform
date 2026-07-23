@@ -16,7 +16,7 @@ def get_quiz_answers_by_attempt(session: Session, attempt_id: int):
 
 
 def create_quiz_answer(
-    session: Session, question_id: int, attempt_id: int, answer_in: QuizAnswerCreate
+    session: Session, question_id: int, attempt_id: int, answer_in: QuizAnswerCreate, user_id: int
 ):
     question = question_repo.get_question_by_id(session, question_id)
     if not question:
@@ -24,6 +24,8 @@ def create_quiz_answer(
     quiz_attempt = quizAttempt_repo.get_quiz_attempt_by_id(session, attempt_id)
     if not quiz_attempt:
         raise HTTPException(404, "quiz attempt not found with this ID")
+    if quiz_attempt.user_id != user_id:
+        raise HTTPException(403, "this attempt does not belong to you")
     if quiz_attempt.completed_at is not None:
         raise HTTPException(400, "this quiz attempt is already completed")
     if question.module_id != quiz_attempt.module_id:
