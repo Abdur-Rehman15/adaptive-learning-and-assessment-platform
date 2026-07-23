@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 from models.course_model import Course
 from schemas.course_schema import CourseCreate, CourseUpdate
+import repositories.module_repo as module_repo
 
 
 def get_course_by_id(session: Session, course_id: int):
@@ -41,5 +42,10 @@ def update_course(session: Session, course_id: int, updated_course: CourseUpdate
 def delete_course(session: Session, course_id: int):
     course = get_course_by_id(session, course_id)
     if course:
+        modules = module_repo.get_course_modules(session, course_id)
+        for module in modules:
+            if module.id is not None:
+                module_repo.delete_module(session, module.id, commit=False)
+
         session.delete(course)
         session.commit()
