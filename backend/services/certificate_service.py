@@ -2,7 +2,6 @@ import os
 from io import BytesIO
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
-from fastapi import HTTPException
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from schemas.certificate_schema import CertificateCreate
@@ -84,25 +83,23 @@ def __draw_certificate_pdf(
         date_width = draw.textlength(date_text, font=footer_font)
         code_width = draw.textlength(code_text, font=footer_font)
 
-    name_y = int(H * 0.45)
-    course_y = int(H * 0.55)
-    footer_y = int(H * 0.78)
+    name_y = int(H * 0.46)        
+    course_y = int(H * 0.61)      
+    footer_y = int(H * 0.80)      
 
-    # Draw Student Name (centered)
+    text_color = (255, 255, 255)
+
     name_x = (W - name_width) / 2
-    draw.text((name_x, name_y), student_name, fill=(0, 0, 0), font=name_font)
+    draw.text((name_x, name_y), student_name, fill=text_color, font=name_font)
 
-    # Draw Course Title (centered)
     course_x = (W - course_width) / 2
-    draw.text((course_x, course_y), course_title, fill=(0, 0, 0), font=course_font)
+    draw.text((course_x, course_y), course_title, fill=text_color, font=course_font)
 
-    # Draw Date (left side)
-    date_x = (W * 0.30) - (date_width / 2)
-    draw.text((date_x, footer_y), date_text, fill=(50, 50, 50), font=footer_font)
+    date_x = (W * 0.32) - (date_width / 2)
+    draw.text((date_x, footer_y), date_text, fill=text_color, font=footer_font)
 
-    # Draw Verification Code (right side)
     code_x = (W * 0.70) - (code_width / 2)
-    draw.text((code_x, footer_y), code_text, fill=(50, 50, 50), font=footer_font)
+    draw.text((code_x, footer_y), code_text, fill=text_color, font=footer_font)
 
     # Save to buffer
     pdf_buffer = BytesIO()
@@ -135,7 +132,6 @@ def download_certificate(
 
     pdf_file = __draw_certificate_pdf(student_username, course.title, verification_code)
 
-    # 3. Stream it natively to browser as an attachment download
     return StreamingResponse(
         pdf_file,
         media_type="application/pdf",
